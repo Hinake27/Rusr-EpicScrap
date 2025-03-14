@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增強套件搜尋工具</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: rgba(30, 30, 30, 0.8);
+            --text-color: #e0e0e0;
+            --accent-color: #4e76c7;
+            --border-color: rgba(75, 75, 75, 0.5);
+            --item-hover: rgba(60, 60, 60, 0.6);
+            --input-bg: rgba(40, 40, 40, 0.7);
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wMykiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjcGF0dGVybikiLz48L3N2Zz4=');
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 25%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+        
+        h1 {
+            color: var(--text-color);
+            font-weight: 300;
+            text-shadow: 0 0 5px rgba(78, 118, 199, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: rgba(224, 224, 224, 0.6);
+            font-size: 14px;
+        }
+        
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(224, 224, 224, 0.5);
+            pointer-events: none;
+        }
+        
+        .results {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .kit-item {
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kit-item:hover {
+            background-color: var(--item-hover);
+        }
+        
+        .kit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .kit-name {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .kit-icon {
+            margin-right: 10px;
+            background-color: rgba(78, 118, 199, 0.2);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .kit-en {
+            color: rgba(224, 224, 224, 0.7);
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .kit-effect {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .effect-icon {
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+        
+        .kit-max {
+            margin-top: 12px;
+            padding: 6px 10px;
+            background-color: rgba(80, 80, 80, 0.4);
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: rgb(224, 224, 224, 0.9);
+            border-left: 3px solid;
+        }
+        
+        /* 不同最大值的顏色 */
+        .max-high {
+            border-color: #4CAF50;
+        }
+        
+        .max-medium {
+            border-color: #FFC107;
+        }
+        
+        .max-low {
+            border-color: #FF5722;
+        }
+        
+        .max-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .no-results {
+            color: rgba(224, 224, 224, 0.5);
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+        }
+        
+        .stat-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+            background-color: rgba(78, 118, 199, 0.2);
+            color: rgba(224, 224, 224, 0.9);
+        }
+        
+        .count-info {
+            text-align: right;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: rgba(224, 224, 224, 0.5);
+        }
+        
+        /* 不同類型的套件有不同顏色 */
+        .damage-type .kit-icon {
+            background-color: rgba(205, 92, 92, 0.2);
+        }
+        
+        .resource-type .kit-icon {
+            background-color: rgba(60, 179, 113, 0.2);
+        }
+        
+        .protection-type .kit-icon {
+            background-color: rgba(70, 130, 180, 0.2);
+        }
+        
+        .utility-type .kit-icon {
+            background-color: rgba(218, 165, 32, 0.2);
+        }
+        
+        /* 漸變效果 */
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .highlight {
+            background: linear-gradient(90deg, rgba(78, 118, 199, 0) 0%, rgba(78, 118, 199, 0.1) 50%, rgba(78, 118, 199, 0) 100%);
+            background-size: 200% 200%;
+            animation: gradient 2s ease infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RUST-EPIC廢料增強套件搜尋工具</h1>
+        <div class="subtitle">遊戲內所有可用的增強套件效果一覽表</div>
+    </div>
+    
+    <div class="search-container">
+        <div class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </div>
+        <input type="text" id="searchInput" placeholder="搜尋增強套件(中英文名稱、效果)..." autofocus>
+    </div>
+    
+    <div class="count-info" id="countInfo">顯示全部 <span id="count">0</span> 個增強套件</div>
+    
+    <div class="results" id="results"></div>
+
+    <script>
+        // 定義增強套件資料
+        const kits = [
+            {
+                en: "ENHANCEMENT KIT:MININGLUCK",
+                name: "礦工 (Miners)",
+                effect: "增加採礦收益x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:DURABLE",
+                name: "伐木工 (Lumberjacks)",
+                effect: "增加伐木收益x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:SKINNINGLUCK",
+                name: "剝皮師 (Skinners)",
+                effect: "增加剝皮收益x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:THRIFTY",
+                name: "農夫 (Farmers)",
+                effect: "增加農作物收益x%",
+                max: "0.15",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:ROCKCYCLER",
+                name: "採集者 (Foragers)",
+                effect: "增加採集收益x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:FISHINGLUCK",
+                name: "漁夫 (Fishermans)",
+                effect: "增加釣魚收益x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:BEASTWARD",
+                name: "炸藥專家 (Demo)",
+                effect: "降低受到爆炸物傷害x%",
+                max: "0.15",
+                type: "protection-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:FALLDAMAGE",
+                name: "運輸工 (Transporters)",
+                effect: "減少直升機/船燃料消耗x%",
+                max: "0.15",
+                type: "utility-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:MANUFACTURE",
+                name: "工匠 (Crafters)",
+                effect: "增加製作速度x%",
+                max: "0.15",
+                type: "utility-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:REINFORCED",
+                name: "強化 (Reinforced)",
+                effect: "減少所有物品耐久度損失x%",
+                max: "0.15",
+                type: "utility-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:ANGLER",
+                name: "馴獸師 (Tamers)",
+                effect: "減少來自動物的傷害x%",
+                max: "0.15",
+                type: "protection-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:BUTCHER",
+                name: "獵人 (Hunters)",
+                effect: "增加對動物傷害x%",
+                max: "0.15",
+                type: "damage-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:COMPONETLUCK",
+                name: "刺殺者 (Operators)",
+                effect: "增加對人型NPC的傷害x%",
+                max: "0.15",
+                type: "damage-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:ATTRACTIVE",
+                name: "騎手 (Jockeys)",
+                effect: "增加騎乘馬匹速度x%",
+                max: "0.25",
+                type: "utility-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:SHARKWARD",
+                name: "突襲者 (Raiders)",
+                effect: "爆炸物或火箭被反還的機率x%",
+                max: "0.05",
+                type: "protection-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:PHARMACEUTICAL",
+                name: "醫療 (Medics)",
+                effect: "能夠增強你的瞄準效果百分x%",
+                max: "0.05",
+                type: "utility-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:HEALSHARE",
+                name: "騎士 (Knights)",
+                effect: "減少近戰攻擊造成的傷害x%",
+                max: "0.05",
+                type: "protection-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:ENVIRONMENTALIST",
+                name: "野蠻人 (Barbarians)",
+                effect: "增加近戰攻擊造成的傷害x%",
+                max: "0.05",
+                type: "damage-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:SMELTER",
+                name: "冶煉爐 (Smelter)",
+                effect: "提高冶煉效率x%",
+                max: "0.25",
+                type: "resource-type"
+            },
+            {
+                en: "ENHANCEMENT KIT:ATTRACTIVE (Alt)",
+                name: "吸引力",
+                effect: "你有 x% 機率在半徑稍子時直接獲得其內容物",
+                max: "0.15",
+                type: "utility-type"
+            }
+        ];
+
+        // 獲取DOM元素
+        const searchInput = document.getElementById('searchInput');
+        const resultsDiv = document.getElementById('results');
+        const countSpan = document.getElementById('count');
+        const countInfo = document.getElementById('countInfo');
+
+        // 類型圖標映射
+        const typeIcons = {
+            'damage-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>`,
+            'resource-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L6 9v12h12V9l-6-6z"/></svg>`,
+            'protection-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+            'utility-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>`
+        };
+
+        // 效果圖標
+        const effectIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"></path><path d="M12 18v4"></path><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="M2 12h6"></path><path d="M18 12h4"></path><path d="m4.93 19.07 4.24-4.24"></path><path d="m14.83 9.17 4.24-4.24"></path></svg>`;
+
+        // 獲取最大值的類別
+        function getMaxValueClass(maxValue) {
+            const val = parseFloat(maxValue);
+            if (val >= 0.25) return 'max-high';
+            if (val >= 0.15) return 'max-medium';
+            return 'max-low';
+        }
+
+        // 顯示結果函數
+        function displayResults(filteredKits, searchTerm = '') {
+            // 清空結果區域
+            resultsDiv.innerHTML = '';
+            
+            // 更新計數
+            countSpan.textContent = filteredKits.length;
+            countInfo.textContent = searchTerm ? `找到 ${filteredKits.length} 個匹配結果` : `顯示全部 ${filteredKits.length} 個增強套件`;
+            
+            // 如果沒有結果
+            if (filteredKits.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">找不到匹配的增強套件</div>';
+                return;
+            }
+
+            // 遍歷並顯示結果
+            filteredKits.forEach(kit => {
+                const kitItem = document.createElement('div');
+                kitItem.className = `kit-item ${kit.type}`;
+                
+                // 突出顯示搜尋結果
+                if (searchTerm && 
+                    (kit.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                     kit.en.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                     kit.effect.toLowerCase().includes(searchTerm.toLowerCase()))) {
+                    kitItem.classList.add('highlight');
+                }
+                
+                // 創建名稱元素
+                const nameElement = document.createElement('div');
+                nameElement.className = 'kit-name';
+                
+                // 添加圖標
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'kit-icon';
+                iconSpan.innerHTML = typeIcons[kit.type];
+                
+                nameElement.appendChild(iconSpan);
+                nameElement.appendChild(document.createTextNode(kit.name));
+                
+                // 添加標籤
+                const badgeElement = document.createElement('span');
+                badgeElement.className = 'stat-badge';
+                
+                switch(kit.type) {
+                    case 'damage-type':
+                        badgeElement.textContent = '傷害';
+                        break;
+                    case 'resource-type':
+                        badgeElement.textContent = '資源';
+                        break;
+                    case 'protection-type':
+                        badgeElement.textContent = '防護';
+                        break;
+                    case 'utility-type':
+                        badgeElement.textContent = '工具';
+                        break;
+                }
+                
+                nameElement.appendChild(badgeElement);
+                
+                const enElement = document.createElement('div');
+                enElement.className = 'kit-en';
+                enElement.textContent = kit.en;
+                
+                const effectElement = document.createElement('div');
+                effectElement.className = 'kit-effect';
+                
+                const effectIconSpan = document.createElement('span');
+                effectIconSpan.className = 'effect-icon';
+                effectIconSpan.innerHTML = effectIcon;
+                
+                effectElement.appendChild(effectIconSpan);
+                effectElement.appendChild(document.createTextNode(kit.effect));
+                
+                // 創建最大值元素，帶有視覺強調
+                const maxValueClass = getMaxValueClass(kit.max);
+                const maxElement = document.createElement('div');
+                maxElement.className = `kit-max ${maxValueClass}`;
+                
+                // 將最大值分開處理，使其更醒目
+                maxElement.innerHTML = `單一裝備增益最大值: <span class="max-value">${kit.max}</span>`;
+                
+                kitItem.appendChild(nameElement);
+                kitItem.appendChild(enElement);
+                kitItem.appendChild(effectElement);
+                kitItem.appendChild(maxElement);
+                
+                resultsDiv.appendChild(kitItem);
+            });
+        }
+
+        // 搜尋函數
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // 如果搜尋詞為空，顯示所有套件
+            if (searchTerm === '') {
+                displayResults(kits);
+                return;
+            }
+            
+            // 過濾符合搜尋條件的套件
+            const filteredKits = kits.filter(kit => 
+                kit.name.toLowerCase().includes(searchTerm) || 
+                kit.en.toLowerCase().includes(searchTerm) || 
+                kit.effect.toLowerCase().includes(searchTerm)
+            );
+            
+            // 顯示過濾後的結果
+            displayResults(filteredKits, searchTerm);
+        }
+
+        // 初始化時顯示所有套件
+        displayResults(kits);
+        
+        // 監聽搜尋框輸入事件
+        searchInput.addEventListener('input', performSearch);
+
+        // 確保搜尋功能正常工作的備用方案
+        searchInput.onkeyup = performSearch;
+    </script>
+</body>
+</html>
