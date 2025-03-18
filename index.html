@@ -1,561 +1,830 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>增強套件搜尋工具</title>
+    <title>Rust 特性搜尋工具</title>
     <style>
         :root {
             --bg-color: #121212;
-            --card-bg: rgba(30, 30, 30, 0.8);
+            --card-bg: #1e1e1e;
             --text-color: #e0e0e0;
-            --accent-color: #4e76c7;
-            --border-color: rgba(75, 75, 75, 0.5);
-            --item-hover: rgba(60, 60, 60, 0.6);
-            --input-bg: rgba(40, 40, 40, 0.7);
+            --accent-color: #ff4d00;
+            --secondary-color: #333333;
+            --hover-color: #2c2c2c;
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', 'Microsoft JhengHei UI', sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wMykiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjcGF0dGVybikiLz48L3N2Zz4=');
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
         }
-        
-        .header {
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        header {
             text-align: center;
             margin-bottom: 30px;
+            padding-top: 20px;
             position: relative;
-        }
-        
-        .header::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 25%;
-            width: 50%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-        }
-        
-        h1 {
-            color: var(--text-color);
-            font-weight: 300;
-            text-shadow: 0 0 5px rgba(78, 118, 199, 0.7);
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            color: rgba(224, 224, 224, 0.6);
-            font-size: 14px;
-        }
-        
-        .search-container {
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        input {
             width: 100%;
-            padding: 12px 15px 12px 40px;
-            font-size: 16px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 77, 0, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px rgba(255, 77, 0, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 77, 0, 0.8);
+            }
+        }
+
+        .search-container {
+            margin: 20px 0;
+            width: 100%;
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
             border: none;
-            border-radius: 8px;
-            background-color: var(--input-bg);
+            border-radius: 30px;
+            background-color: var(--secondary-color);
             color: var(--text-color);
-            box-sizing: border-box;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-        
-        input:focus {
+            font-size: 1.1em;
             outline: none;
-            box-shadow: 0 0 0 2px var(--accent-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
         }
-        
+
+        input[type="text"]:focus {
+            box-shadow: 0 4px 20px rgba(255, 77, 0, 0.4);
+        }
+
         .search-icon {
             position: absolute;
-            left: 12px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(224, 224, 224, 0.5);
-            pointer-events: none;
+            color: var(--accent-color);
+            font-size: 1.2em;
         }
-        
-        .results {
+
+        .perks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .perk-card {
             background-color: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
-        }
-        
-        .kit-item {
-            padding: 15px;
-            margin: 0;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardAppear 0.5s ease forwards;
         }
-        
-        .kit-item:hover {
-            background-color: var(--item-hover);
+
+        @keyframes cardAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .kit-item:last-child {
-            border-bottom: none;
+
+        .perk-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background-color: var(--hover-color);
         }
-        
-        .kit-name {
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
+
+        .perk-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--accent-color);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
         }
-        
-        .kit-icon {
-            margin-right: 10px;
-            background-color: rgba(78, 118, 199, 0.2);
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
+
+        .perk-card:hover:before {
+            transform: scaleY(1);
         }
-        
-        .kit-en {
-            color: rgba(224, 224, 224, 0.7);
-            font-size: 1.1em;
-            margin-bottom: 8px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-        
-        .kit-effect {
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .effect-icon {
-            margin-right: 8px;
-            opacity: 0.7;
-        }
-        
-        .kit-max {
-            margin-top: 12px;
-            padding: 6px 10px;
-            background-color: rgba(80, 80, 80, 0.4);
-            border-radius: 6px;
-            display: inline-block;
-            font-size: 1.1em;
-            font-weight: 500;
-            color: rgb(224, 224, 224, 0.9);
-            border-left: 3px solid;
-        }
-        
-        /* 不同最大值的顏色 */
-        .max-high {
-            border-color: #4CAF50;
-        }
-        
-        .max-medium {
-            border-color: #FFC107;
-        }
-        
-        .max-low {
-            border-color: #FF5722;
-        }
-        
-        .max-value {
+
+        .perk-name {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: var(--accent-color);
             font-weight: bold;
-            font-size: 1.2em;
-            color: white;
-            text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
         }
-        
-        .no-results {
-            color: rgba(224, 224, 224, 0.5);
-            text-align: center;
-            padding: 30px;
+
+        .perk-en {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 15px;
             font-style: italic;
         }
-        
-        .stat-badge {
+
+        .perk-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .perk-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .value-item {
+            text-align: center;
+        }
+
+        .value-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .no-results {
+            text-align: center;
+            font-size: 1.2em;
+            padding: 40px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.8s ease forwards;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            width: 100%;
+            padding: 20px 0;
+        }
+
+        .loading {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 10px;
-            background-color: rgba(78, 118, 199, 0.2);
-            color: rgba(224, 224, 224, 0.9);
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
         }
-        
-        .count-info {
-            text-align: right;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: rgba(224, 224, 224, 0.5);
+
+        .loading div {
+            position: absolute;
+            top: 33px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
         }
-        
-        /* 不同類型的套件有不同顏色 */
-        .damage-type .kit-icon {
-            background-color: rgba(205, 92, 92, 0.2);
+
+        .loading div:nth-child(1) {
+            left: 8px;
+            animation: loading1 0.6s infinite;
         }
-        
-        .resource-type .kit-icon {
-            background-color: rgba(60, 179, 113, 0.2);
+
+        .loading div:nth-child(2) {
+            left: 8px;
+            animation: loading2 0.6s infinite;
         }
-        
-        .protection-type .kit-icon {
-            background-color: rgba(70, 130, 180, 0.2);
+
+        .loading div:nth-child(3) {
+            left: 32px;
+            animation: loading2 0.6s infinite;
         }
-        
-        .utility-type .kit-icon {
-            background-color: rgba(218, 165, 32, 0.2);
+
+        .loading div:nth-child(4) {
+            left: 56px;
+            animation: loading3 0.6s infinite;
         }
-        
-        /* 漸變效果 */
-        @keyframes gradient {
+
+        @keyframes loading1 {
             0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
+                transform: scale(0);
             }
             100% {
-                background-position: 0% 50%;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes loading2 {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(24px, 0);
+            }
+        }
+
+        @keyframes loading3 {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(0);
             }
         }
         
-        .highlight {
-            background: linear-gradient(90deg, rgba(78, 118, 199, 0) 0%, rgba(78, 118, 199, 0.1) 50%, rgba(78, 118, 199, 0) 100%);
-            background-size: 200% 200%;
-            animation: gradient 2s ease infinite;
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 77, 0, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 77, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 77, 0, 0);
+            }
+        }
+        
+        .count-display {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #888;
+            text-align: center;
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff6a33;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>RUST-EPIC廢料增強套件搜尋工具</h1>
-        <div class="subtitle">遊戲內所有可用的增強套件效果一覽表</div>
-    </div>
-    
-    <div class="search-container">
-        <div class="search-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+    <div class="container">
+        <header>
+            <h1>Rust 特性搜尋工具</h1>
+            <p>搜尋並查看遊戲中所有特性的詳細資訊</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="輸入特性名稱或描述關鍵字..." autocomplete="off">
+            <div class="search-icon">🔍</div>
         </div>
-        <input type="text" id="searchInput" placeholder="搜尋增強套件(中英文名稱、效果)..." autofocus>
+        
+        <div class="count-display" id="countDisplay"></div>
+        
+        <div class="loading" id="loading">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <div class="perks-container" id="perksContainer"></div>
+        
+        <div class="no-results" id="noResults" style="display:none;">
+            找不到符合的特性，請嘗試其他關鍵字
+        </div>
     </div>
-    
-    <div class="count-info" id="countInfo">顯示全部 <span id="count">0</span> 個增強套件</div>
-    
-    <div class="results" id="results"></div>
+
+    <footer>
+        &copy; 2025 Rust 特性搜尋工具 | 遊戲資料僅供參考
+    </footer>
 
     <script>
-        // 定義增強套件資料
-        const kits = [
+        // 特性數據
+        const perksData = [
             {
-                en: "ENHANCEMENT KIT:MININGLUCK",
-                name: "礦工 (Miners)",
-                effect: "增加採礦收益x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "探礦者 (Prospector)",
+                englishName: "Prospector",
+                description: "此特性增加您在開採石頭、金屬和硫磺節點時的採礦產量。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:DURABLE",
-                name: "伐木工 (Lumberjacks)",
-                effect: "增加伐木收益x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "伐木工 (Lumberjack)",
+                englishName: "Lumberjack",
+                description: "此特性增加您在砍伐活樹或枯樹時的伐木產量。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:SKINNINGLUCK",
-                name: "剝皮師 (Skinners)",
-                effect: "增加剝皮收益x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "屠夫 (Butcher)",
+                englishName: "Butcher",
+                description: "此特性增加剝皮人類和動物時獲得的資源。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:THRIFTY",
-                name: "農夫 (Farmers)",
-                effect: "增加農作物收益x%",
-                max: "0.15",
-                type: "resource-type"
+                name: "園藝學 (Horticulture)",
+                englishName: "Horticulture",
+                description: "此特性增加收穫種植植物時獲得的資源量。",
+                minValue: "2%",
+                maxValue: "10%"
             },
             {
-                en: "ENHANCEMENT KIT:ROCKCYCLER",
-                name: "採集者 (Foragers)",
-                effect: "增加採集收益x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "採集者 (Forager)",
+                englishName: "Forager",
+                description: "此特性增加撿拾地圖生成的可收集物品時獲得的資源量。",
+                minValue: "5%",
+                maxValue: "15%"
             },
             {
-                en: "ENHANCEMENT KIT:FISHINGLUCK",
-                name: "漁夫 (Fishermans)",
-                effect: "增加釣魚收益x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "釣魚者 (Angler)",
+                englishName: "Angler",
+                description: "此特性增加成功釣魚時獲得的魚量。",
+                minValue: "5%",
+                maxValue: "50%"
             },
             {
-                en: "ENHANCEMENT KIT:BEASTWARD",
-                name: "炸藥專家 (Demo)",
-                effect: "降低受到爆炸物傷害x%",
-                max: "0.15",
-                type: "protection-type"
+                name: "獸害剋星 (BeastBane)",
+                englishName: "BeastBane",
+                description: "此特性增加對動物造成的傷害。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:FALLDAMAGE",
-                name: "運輸工 (Transporters)",
-                effect: "減少直升機/船燃料消耗x%",
-                max: "0.15",
-                type: "utility-type"
+                name: "科學家剋星 (ScientistBane)",
+                englishName: "ScientistBane",
+                description: "此特性增加對科學家造成的傷害。",
+                minValue: "3%",
+                maxValue: "15%"
             },
             {
-                en: "ENHANCEMENT KIT:MANUFACTURE",
-                name: "工匠 (Crafters)",
-                effect: "增加製作速度x%",
-                max: "0.15",
-                type: "utility-type"
+                name: "防彈衣 (FlakJacket)",
+                englishName: "FlakJacket",
+                description: "此特性減少爆炸造成的傷害。",
+                minValue: "15%",
+                maxValue: "25%"
             },
             {
-                en: "ENHANCEMENT KIT:REINFORCED",
+                name: "元素掌控 (Elemental)",
+                englishName: "Elemental",
+                description: "此特性減少來自寒冷和熱源的傷害。",
+                minValue: "5%",
+                maxValue: "15%"
+            },
+            {
+                name: "拾荒者 (Scavenger)",
+                englishName: "Scavenger",
+                description: "此特性使您有機會從箱子和桶中找到額外的廢料。",
+                minValue: "5%",
+                maxValue: "20%"
+            },
+            {
+                name: "製造專家 (Manufacture)",
+                englishName: "Manufacture",
+                description: "此特性增加您的製作速度。",
+                minValue: "5%",
+                maxValue: "20%"
+            },
+            {
+                name: "耐久專家 (Durable)",
+                englishName: "Durable",
+                description: "此特性減少所有裝備物品的耐久度損耗。",
+                minValue: "5%",
+                maxValue: "10%"
+            },
+            {
+                name: "獸害防護 (BeastWard)",
+                englishName: "BeastWard",
+                description: "此特性減少來自動物的傷害。",
+                minValue: "5%",
+                maxValue: "20%"
+            },
+            {
+                name: "科學家防護 (ScientistWard)",
+                englishName: "ScientistWard",
+                description: "此特性減少來自科學家的傷害。",
+                minValue: "1%",
+                maxValue: "8%"
+            },
+            {
+                name: "建築師 (Builder)",
+                englishName: "Builder",
+                description: "此特性使您有機會免費升級建築。",
+                minValue: "2%",
+                maxValue: "10%"
+            },
+            {
+                name: "節儉 (Thrifty)",
+                englishName: "Thrifty",
+                description: "此特性使您有機會在成功製作物品後獲得製作組件的退款。",
+                minValue: "5%",
+                maxValue: "10%"
+            },
+            {
+                name: "複製工藝 (Fabricate)",
+                englishName: "Fabricate",
+                description: "此特性使您有機會在成功製作物品後複製一個物品。",
+                minValue: "4%",
+                maxValue: "10%"
+            },
+            {
+                name: "藥劑師 (Pharmaceutical)",
+                englishName: "Pharmaceutical",
+                description: "此特性增加從所有來源獲得的治療量。",
+                minValue: "4%",
+                maxValue: "10%"
+            },
+            {
+                name: "近戰防護 (MeleeWard)",
+                englishName: "MeleeWard",
+                description: "此特性減少來自近戰武器的傷害。",
+                minValue: "5%",
+                maxValue: "25%"
+            },
+            {
+                name: "學者 (Academic)",
+                englishName: "Academic",
+                description: "此特性使您有機會在研究台研究物品時獲得廢料退款。",
+                minValue: "5%",
+                maxValue: "25%"
+            },
+            {
+                name: "跌落保護 (FallDamage)",
+                englishName: "FallDamage",
+                description: "此特性減少跌落造成的衝擊傷害。",
+                minValue: "5%",
+                maxValue: "20%"
+            },
+            {
+                name: "鉛防護 (Lead)",
+                englishName: "Lead",
+                description: "此特性減少輻射傷害。",
+                minValue: "5%",
+                maxValue: "20%"
+            },
+            {
+                name: "破壞者 (Smasher)",
+                englishName: "Smasher",
+                description: "此特性使您有機會立即用任何傷害摧毀桶子。",
+                minValue: "50%",
+                maxValue: "100%"
+            },
+            {
+                name: "環保主義者 (Environmentalist)",
+                englishName: "Environmentalist",
+                description: "此特性增加您啟動的回收機的速度。",
+                minValue: "5%",
+                maxValue: "15%"
+            },
+            {
+                name: "冶煉師 (Smelter)",
+                englishName: "Smelter",
+                description: "此特性增加您啟動的熔爐冶煉速度。",
+                minValue: "5%",
+                maxValue: "12%"
+            },
+            {
+                name: "醫護兵 (Paramedic)",
+                englishName: "Paramedic",
+                description: "此特性為您復活的玩家提供額外生命值。",
+                minValue: "5%",
+                maxValue: "15%"
+            },
+            {
+                name: "儲備專家 (Prepper)",
+                englishName: "Prepper",
+                description: "此特性使您有機會在進食時不消耗食物。",
+                minValue: "5%",
+                maxValue: "15%"
+            },
+            {
+                name: "再生 (Regeneration)",
+                englishName: "Regeneration",
+                description: "此特性會被動為您恢復生命值。",
+                minValue: "10%",
+                maxValue: "20%"
+            },
+            {
+                name: "鯊魚防護 (SharkWard)",
+                englishName: "SharkWard",
+                description: "此特性減少來自鯊魚的傷害。",
+                minValue: "10%",
+                maxValue: "25%"
+            },
+            {
+                name: "鯊魚剋星 (SharkBane)",
+                englishName: "SharkBane",
+                description: "此特性增加對鯊魚造成的傷害。",
+                minValue: "10%",
+                maxValue: "25%"
+            },
+            {
+                name: "連鎖伐木 (Deforest)",
+                englishName: "Deforest",
+                description: "此特性使您在成功砍倒一棵樹時有機會砍倒附近的樹。",
+                minValue: "2%",
+                maxValue: "6%"
+            },
+            {
+                name: "連鎖採礦 (BlastMine)",
+                englishName: "BlastMine",
+                description: "此特性使您在成功開採一個節點時有機會開採附近的節點。",
+                minValue: "5%",
+                maxValue: "10%"
+            },
+            {
+                name: "連鎖剝皮 (Tanner)",
+                englishName: "Tanner",
+                description: "此特性使您在成功剝皮一具屍體時有機會剝皮附近的屍體。",
+                minValue: "2%",
+                maxValue: "6%"
+            },
+            {
+                name: "吸血 (Vampiric)",
+                englishName: "Vampiric",
+                description: "此特性會根據對特定敵人造成的傷害百分比為您恢復生命值。",
+                minValue: "0%",
+                maxValue: "2%"
+            },
+            {
                 name: "強化 (Reinforced)",
-                effect: "減少所有物品耐久度損失x%",
-                max: "0.15",
-                type: "utility-type"
+                englishName: "Reinforced",
+                description: "此特性減少您乘坐的車輛受到的傷害。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:ANGLER",
-                name: "馴獸師 (Tamers)",
-                effect: "減少來自動物的傷害x%",
-                max: "0.15",
-                type: "protection-type"
+                name: "零件幸運 (ComponentLuck)",
+                englishName: "ComponentLuck",
+                description: "此特性使您有機會在搜刮桶子和箱子時獲得額外零件。",
+                minValue: "3%",
+                maxValue: "8%"
             },
             {
-                en: "ENHANCEMENT KIT:BUTCHER",
-                name: "獵人 (Hunters)",
-                effect: "增加對動物傷害x%",
-                max: "0.15",
-                type: "damage-type"
+                name: "電子幸運 (ElectronicsLuck)",
+                englishName: "ElectronicsLuck",
+                description: "此特性使您有機會在搜刮桶子和箱子時獲得額外電子元件。",
+                minValue: "3%",
+                maxValue: "8%"
             },
             {
-                en: "ENHANCEMENT KIT:COMPONETLUCK",
-                name: "刺殺者 (Operators)",
-                effect: "增加對人型NPC的傷害x%",
-                max: "0.15",
-                type: "damage-type"
+                name: "奇妙閃避 (UncannyDodge)",
+                englishName: "UncannyDodge",
+                description: "此特性使您有機會閃避即將到來的傷害，將其減至0。",
+                minValue: "1%",
+                maxValue: "3%"
             },
             {
-                en: "ENHANCEMENT KIT:ATTRACTIVE",
-                name: "騎手 (Jockeys)",
-                effect: "增加騎乘馬匹速度x%",
-                max: "0.25",
-                type: "utility-type"
+                name: "釣線強度 (LineStrength)",
+                englishName: "LineStrength",
+                description: "此特性增加您釣魚線的抗拉強度。",
+                minValue: "5%",
+                maxValue: "20%"
             },
             {
-                en: "ENHANCEMENT KIT:SHARKWARD",
-                name: "突襲者 (Raiders)",
-                effect: "爆炸物或火箭被反還的機率x%",
-                max: "0.05",
-                type: "protection-type"
+                name: "治療共享 (HealShare)",
+                englishName: "HealShare",
+                description: "此特性將治療效果與附近的玩家共享。",
+                minValue: "3%",
+                maxValue: "10%"
             },
             {
-                en: "ENHANCEMENT KIT:PHARMACEUTICAL",
-                name: "醫療 (Medics)",
-                effect: "能夠增強你的瞄準效果百分x%",
-                max: "0.05",
-                type: "utility-type"
+                name: "吸引力 (Attractive)",
+                englishName: "Attractive",
+                description: "此特性使您有機會在摧毀桶子時自動拾取零件。",
+                minValue: "15%",
+                maxValue: "25%"
             },
             {
-                en: "ENHANCEMENT KIT:HEALSHARE",
-                name: "騎士 (Knights)",
-                effect: "減少近戰攻擊造成的傷害x%",
-                max: "0.05",
-                type: "protection-type"
+                name: "伐木幸運 (WoodcuttingLuck)",
+                englishName: "WoodcuttingLuck",
+                description: "此特性使您有機會在砍倒樹木時找到隨機物品。",
+                minValue: "1%",
+                maxValue: "3%"
             },
             {
-                en: "ENHANCEMENT KIT:ENVIRONMENTALIST",
-                name: "野蠻人 (Barbarians)",
-                effect: "增加近戰攻擊造成的傷害x%",
-                max: "0.05",
-                type: "damage-type"
+                name: "採礦幸運 (MiningLuck)",
+                englishName: "MiningLuck",
+                description: "此特性使您有機會在開採節點時找到隨機物品。",
+                minValue: "1%",
+                maxValue: "3%"
             },
             {
-                en: "ENHANCEMENT KIT:SMELTER",
-                name: "冶煉爐 (Smelter)",
-                effect: "提高冶煉效率x%",
-                max: "0.25",
-                type: "resource-type"
+                name: "剝皮幸運 (SkinningLuck)",
+                englishName: "SkinningLuck",
+                description: "此特性使您有機會在剝皮屍體時找到隨機物品。",
+                minValue: "1%",
+                maxValue: "5%"
             },
             {
-                en: "ENHANCEMENT KIT:ATTRACTIVE (Alt)",
-                name: "吸引力",
-                effect: "你有 x% 機率在半徑稍子時直接獲得其內容物",
-                max: "0.15",
-                type: "utility-type"
+                name: "釣魚幸運 (FishingLuck)",
+                englishName: "FishingLuck",
+                description: "此特性使您有機會在捕魚時找到隨機物品。",
+                minValue: "1%",
+                maxValue: "5%"
+            },
+            {
+                name: "飽足 (Sated)",
+                englishName: "Sated",
+                description: "此特性增加您從食物和水源獲得的卡路里和水分。",
+                minValue: "10%",
+                maxValue: "50%"
+            },
+            {
+                name: "鐵胃 (IronStomach)",
+                englishName: "IronStomach",
+                description: "此特性使您有機會在消費食物時免疫負面效果。",
+                minValue: "50%",
+                maxValue: "100%"
+            },
+            {
+                name: "樹木種植者 (TreePlanter)",
+                englishName: "TreePlanter",
+                description: "此特性使砍倒的樹木有機會立即重新生長。",
+                minValue: "3%",
+                maxValue: "7%"
+            },
+            {
+                name: "岩石循環 (RockCycler)",
+                englishName: "RockCycler",
+                description: "此特性使開採完的節點有機會立即重新生成。",
+                minValue: "3%",
+                maxValue: "7%"
+            },
+            {
+                name: "布拉德利傷害 (BradleyDamage)",
+                englishName: "BradleyDamage",
+                description: "此特性增加對布拉德利坦克造成的傷害。",
+                minValue: "3%",
+                maxValue: "5%"
+            },
+            {
+                name: "直升機傷害 (HeliDamage)",
+                englishName: "HeliDamage",
+                description: "此特性增加對巡邏直升機造成的傷害。",
+                minValue: "3%",
+                maxValue: "5%"
             }
         ];
 
-        // 獲取DOM元素
-        const searchInput = document.getElementById('searchInput');
-        const resultsDiv = document.getElementById('results');
-        const countSpan = document.getElementById('count');
-        const countInfo = document.getElementById('countInfo');
-
-        // 類型圖標映射
-        const typeIcons = {
-            'damage-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>`,
-            'resource-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L6 9v12h12V9l-6-6z"/></svg>`,
-            'protection-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
-            'utility-type': `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>`
-        };
-
-        // 效果圖標
-        const effectIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"></path><path d="M12 18v4"></path><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="M2 12h6"></path><path d="M18 12h4"></path><path d="m4.93 19.07 4.24-4.24"></path><path d="m14.83 9.17 4.24-4.24"></path></svg>`;
-
-        // 獲取最大值的類別
-        function getMaxValueClass(maxValue) {
-            const val = parseFloat(maxValue);
-            if (val >= 0.25) return 'max-high';
-            if (val >= 0.15) return 'max-medium';
-            return 'max-low';
-        }
-
-        // 顯示結果函數
-        function displayResults(filteredKits, searchTerm = '') {
-            // 清空結果區域
-            resultsDiv.innerHTML = '';
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const perksContainer = document.getElementById('perksContainer');
+            const noResults = document.getElementById('noResults');
+            const loading = document.getElementById('loading');
+            const countDisplay = document.getElementById('countDisplay');
             
-            // 更新計數
-            countSpan.textContent = filteredKits.length;
-            countInfo.textContent = searchTerm ? `找到 ${filteredKits.length} 個匹配結果` : `顯示全部 ${filteredKits.length} 個增強套件`;
+            // 初始化顯示所有特性
+            setTimeout(() => {
+                displayPerks(perksData);
+                loading.style.display = 'none';
+                perksContainer.style.display = 'grid';
+                updateCount(perksData.length);
+            }, 800);
             
-            // 如果沒有結果
-            if (filteredKits.length === 0) {
-                resultsDiv.innerHTML = '<div class="no-results">找不到匹配的增強套件</div>';
-                return;
-            }
-
-            // 遍歷並顯示結果
-            filteredKits.forEach(kit => {
-                const kitItem = document.createElement('div');
-                kitItem.className = `kit-item ${kit.type}`;
+            // 搜尋功能
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
                 
-                // 突出顯示搜尋結果
-                if (searchTerm && 
-                    (kit.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                     kit.en.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                     kit.effect.toLowerCase().includes(searchTerm.toLowerCase()))) {
-                    kitItem.classList.add('highlight');
-                }
+                perksContainer.style.display = 'none';
+                loading.style.display = 'inline-block';
                 
-                // 創建名稱元素
-                const nameElement = document.createElement('div');
-                nameElement.className = 'kit-name';
-                
-                // 添加圖標
-                const iconSpan = document.createElement('span');
-                iconSpan.className = 'kit-icon';
-                iconSpan.innerHTML = typeIcons[kit.type];
-                
-                nameElement.appendChild(iconSpan);
-                nameElement.appendChild(document.createTextNode(kit.name));
-                
-                // 添加標籤
-                const badgeElement = document.createElement('span');
-                badgeElement.className = 'stat-badge';
-                
-                switch(kit.type) {
-                    case 'damage-type':
-                        badgeElement.textContent = '傷害';
-                        break;
-                    case 'resource-type':
-                        badgeElement.textContent = '資源';
-                        break;
-                    case 'protection-type':
-                        badgeElement.textContent = '防護';
-                        break;
-                    case 'utility-type':
-                        badgeElement.textContent = '工具';
-                        break;
-                }
-                
-                nameElement.appendChild(badgeElement);
-                
-                const enElement = document.createElement('div');
-                enElement.className = 'kit-en';
-                enElement.textContent = kit.en;
-                
-                const effectElement = document.createElement('div');
-                effectElement.className = 'kit-effect';
-                
-                const effectIconSpan = document.createElement('span');
-                effectIconSpan.className = 'effect-icon';
-                effectIconSpan.innerHTML = effectIcon;
-                
-                effectElement.appendChild(effectIconSpan);
-                effectElement.appendChild(document.createTextNode(kit.effect));
-                
-                // 創建最大值元素，帶有視覺強調
-                const maxValueClass = getMaxValueClass(kit.max);
-                const maxElement = document.createElement('div');
-                maxElement.className = `kit-max ${maxValueClass}`;
-                
-                // 將最大值分開處理，使其更醒目
-                maxElement.innerHTML = `單一裝備增益最大值: <span class="max-value">${kit.max}</span>`;
-                
-                kitItem.appendChild(nameElement);
-                kitItem.appendChild(enElement);
-                kitItem.appendChild(effectElement);
-                kitItem.appendChild(maxElement);
-                
-                resultsDiv.appendChild(kitItem);
+                setTimeout(() => {
+                    if (searchTerm.trim() === '') {
+                        displayPerks(perksData);
+                        noResults.style.display = 'none';
+                        updateCount(perksData.length);
+                    } else {
+                        const filteredPerks = perksData.filter(perk => {
+                            return perk.name.toLowerCase().includes(searchTerm) || 
+                                   perk.englishName.toLowerCase().includes(searchTerm) ||
+                                   perk.description.toLowerCase().includes(searchTerm);
+                        });
+                        
+                        if (filteredPerks.length > 0) {
+                            displayPerks(filteredPerks);
+                            noResults.style.display = 'none';
+                            updateCount(filteredPerks.length);
+                        } else {
+                            perksContainer.innerHTML = '';
+                            noResults.style.display = 'block';
+                            updateCount(0);
+                        }
+                    }
+                    
+                    loading.style.display = 'none';
+                    perksContainer.style.display = 'grid';
+                }, 500);
             });
-        }
-
-        // 搜尋函數
-        function performSearch() {
-            const searchTerm = searchInput.value.toLowerCase();
             
-            // 如果搜尋詞為空，顯示所有套件
-            if (searchTerm === '') {
-                displayResults(kits);
-                return;
+            function displayPerks(perks) {
+                perksContainer.innerHTML = '';
+                
+                perks.forEach((perk, index) => {
+                    const perkCard = document.createElement('div');
+                    perkCard.className = 'perk-card';
+                    perkCard.style.animationDelay = `${index * 0.05}s`;
+                    
+                    perkCard.innerHTML = `
+                        <div class="perk-name">${perk.name}</div>
+                        <div class="perk-en">${perk.englishName}</div>
+                        <div class="perk-description">${perk.description}</div>
+                        <div class="perk-values">
+                            <div class="value-item">
+                                <div class="value-label">最低值</div>
+                                <div class="value">${perk.minValue}</div>
+                            </div>
+                            <div class="value-item">
+                                <div class="value-label">最高值</div>
+                                <div class="value">${perk.maxValue}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    perksContainer.appendChild(perkCard);
+                });
             }
             
-            // 過濾符合搜尋條件的套件
-            const filteredKits = kits.filter(kit => 
-                kit.name.toLowerCase().includes(searchTerm) || 
-                kit.en.toLowerCase().includes(searchTerm) || 
-                kit.effect.toLowerCase().includes(searchTerm)
-            );
-            
-            // 顯示過濾後的結果
-            displayResults(filteredKits, searchTerm);
-        }
-
-        // 初始化時顯示所有套件
-        displayResults(kits);
-        
-        // 監聽搜尋框輸入事件
-        searchInput.addEventListener('input', performSearch);
-
-        // 確保搜尋功能正常工作的備用方案
-        searchInput.onkeyup = performSearch;
+            function updateCount(count) {
+                countDisplay.textContent = `找到 ${count} 個特性`;
+                
+                if (count > 0) {
+                    countDisplay.classList.add('pulse');
+                    setTimeout(() => {
+                        countDisplay.classList.remove('pulse');
+                    }, 2000);
+                }
+            }
+        });
     </script>
 </body>
 </html>
